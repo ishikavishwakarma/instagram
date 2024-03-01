@@ -1,0 +1,122 @@
+<% include ./partials/header.ejs %>
+<div class="w-full h-full  bg-zinc-900 -mt-5 overflow-hidden  text-white relative ">
+    <div class="text-white flex items-center gap-3 px-3 py-3 bg-zinc-900 mt-5">
+        <div class="image overflow-hidden w-[11vw] h-[11vw] rounded-full bg-sky-100">
+            <img class = "w-[100%] h-[100%] object-cover" src="/images/uploads/<%=founduser.image%>" alt="">
+        </div>
+        <div class="text">
+            <h3><%= founduser.username %></h3>
+            <h4 class="text-xs opacity-30 leading-none"><%=founduser.name%></h4>
+        </div>
+    </div>
+    <div class="chat-con h-[91vh] overflow-scroll p-2 w-full bg-zinc-800">
+               
+    </div> 
+    <form action=""  id="chat-form" class="absolute flex rounded-full  bottom-[.5%] left-[0%] h-[7vh] w-full bg-zinc-900">
+        <textarea type="text" name="message" class=" p-3 border rounded-full h-[100%] bg-zinc-900 text-mid w-full text-white" placeholder="Enter Message" id="message" required cols="20" rows="10"></textarea>
+        <input class="absolute h-full text-mid text-white w-[12vh] right-[0%]" type="submit" value="Send">
+    </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.5/axios.min.js" integrity="sha512-TjBzDQIDnc6pWyeM1bhMnDxtWH0QpOXMcVooglXrali/Tj7W569/wd4E8EDjk1CwOAOPSJon1VfcEt1BI4xIrA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var sender_id = '<%= onlyuser._id %>';
+    var receiver_id = "<%= founduser._id %>";
+    var socket = io('/name',{
+      auth:{
+        token:'<%= onlyuser._id %>'
+      }
+    });
+
+     //update user online status
+  socket.on('getOnlineUser',function(data){
+    console.log('heyy',data)
+    $('#'+data.founduser_id+'-status').text(online)
+    $('#'+data.founduser_id+'-status').removeClass('offline')
+    $('#'+data.founduser_id+'-status').addClass('online')
+  })
+  //update user offline status
+  socket.on('getOfflineUser',function(data){
+    $('#'+data.founduser_id+'-status').text(offline)
+    $('#'+data.founduser_id+'-status').addClass('offline')
+    $('#'+data.founduser_id+'-status').removeClass('online')
+  })
+
+  socket.emit('existsChat', { sender_id:sender_id, receiver_id:receiver_id });
+   console.log(receiver_id);
+   Array.from(document.querySelectorAll('#chat-form')).forEach(e => e.addEventListener("submit", function(e) {
+    e.preventDefault();
+    var message = $('#message').val()
+    $.ajax({
+      url:'/save-chat',
+      type:'POST',
+      data:{
+        message:message,
+        sender_id:sender_id,
+        receiver_id:receiver_id},
+        success:function(response){
+          if(response.success){
+            console.log(response)
+            $('#message').val("");
+            let Chat = response.data.message;
+            let html =`
+            <div class="current-user  text-right   text-[3.5vh]">
+              <h5">`+Chat+` </h5>
+             </div>
+            `;
+            $('.chat-con').append(html);
+            socket.emit('newChats',response.data)
+            scrollchat()
+          }else{
+            alert(data.msg)
+          }
+        }
+      })
+
+   }))
+   socket.on('loadChats',function(data){
+    if(sender_id == data.receiver_id && receiver_id == data.sender_id){
+      let html =`
+      <div class="distance-user   text-left   text-[3.5vh]">
+        <h5>`+data.message+`</h5>
+       </div> `;
+      $('.chat-con').append(html);
+    }
+    scrollchat()
+   })
+
+   socket.on('load',function(data){
+    $(".chat-con").html(' ');
+ var chats = data.chats;
+ let html = ' ';
+ for(let x = 0; x < chats.length; x++){
+  let addClass = '';
+		if(chats[x]['sender_id'] == sender_id){
+			addClass = 'current-user text-right   text-[3.5vh]';
+		}
+		else{
+			addClass = 'distance-user text-left  text-[3.5vh]';
+		} 
+    html +=` 	<div class='`+addClass+`'>
+			<h5>`+chats[x]['message']+``;
+        if(chats[x]['sender_id'] == sender_id){
+       /*   html +=`   <i id="ic" class="ri-arrow-down-line"></i>`;*/
+          html += `<div class='chota'></div>`;
+        }
+        html +=`</h5> </div>`;
+        
+  
+ }
+ $(".chat-con").append(html);
+ scrollchat()
+   })
+ 
+function scrollchat(){
+  $(".chat-con").animate({
+		scrollTop:$('.chat-con').offset().top + $('.chat-con')[0].scrollHeight
+	},0);
+}
+
+  </script>
+<% include ./partials/footer.ejs %>

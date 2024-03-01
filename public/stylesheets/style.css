@@ -1,0 +1,37 @@
+
+
+.story::-webkit-scrollbar{
+  display: none;
+}
+
+a:focus {
+  outline: none !important;
+}
+.icon3{
+  -webkit-text-stroke: 1.4px white;
+}
+
+.textt::-webkit-scrollbar{
+  display: none;
+}
+#text-container {
+cursor: move;
+}
+
+#story-text {
+  resize: none;
+  overflow: hidden;
+  border: none;
+}
+.current-user{
+  text-align: right;
+  font-size: 3.5vh;
+  color: #fff;
+  font-weight: 300;
+}
+.distance-user{
+  text-align: left;
+  font-size: 3.5vh;
+  color: #fff;
+  font-weight: 300;
+}

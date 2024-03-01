@@ -1,0 +1,156 @@
+<% include ./partials/header.ejs %>
+<style>
+    .swiper-button-next {
+        transform: translate(-25vw, 0);
+        color: white;
+      }
+      .swiper-button-prev {
+        transform: translate(25vw, 0);
+        color: white;
+      }
+   
+</style>
+<div id="storiesparent" class=" h-[100vh]  w-[100vw] bg-zinc-800  pb-3 relative flex flex-col items-center  ">
+
+    <div id="storieschilddetails " class="z-50 h-[5vh] bg-transparent px-3 gap-2 py-8 w-[100vw]  flex items-center">
+        <div id="storieschildnavbar" class="transition-all duration-1000  h-[4px] w-[0%] absolute top-[0%] left-[0%] z-50 bg-white"></div>
+        <div class="relative  flex gap-2 items-center w-[60vh]">
+          <img class="h-[5vh] w-[5vh] object-cover rounded-full"  src="../images/uploads/<%= user.image %> " alt="" />
+            <h2 class="text-mid text-black font-9 text-white"><%= user.username %></h2>
+        </div>
+        <a href="/feed"><i class="ri-close-line text-white text-[3vh]  right-[8%] top-[1.5%] absolute"></i></a>
+      </div>
+      <div class="swiper mySwiper w-[100%] -mt-[8.5vh] bg-zinc-800 h-[100%]">
+        <div class="swiper-wrapper">
+            <% userstory.forEach(function(story){ %>
+                <div class="swiper-slide  items-center justify-between flex">
+                    <div id="storieschild" class="relative shrink-0 bg-zinc-800 w-[70vh] h-[100vh]">
+                        <% if (story.storyimage) { %>
+                            <div id="storydetails" class="h-[100vh] items-center bg-zinc-800 flex w-[100vw] relative">
+                                <% const fileExtension =
+                                story.storyimage.split('.').pop().toLowerCase(); %> <% if
+                                (fileExtension === 'mp4' || fileExtension === 'mkv') { %>
+                    <!-- <h4 id="storydate"><%= new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric' }).format(new Date(story.date)) %></h4> -->
+                    <video
+                    src="../images/uploads/<%= story.storyimage %>"
+                 
+                    autoplay
+                
+                 class=" block w-[100%] object-cover video "
+                  ></video>
+                  <% } else { %>
+                    <!-- <h4  id="storydate"><%= new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric' }).format(new Date(story.date)) %></h4> -->
+                  <img
+                 class=" block w-[100%] object-cover image  "
+                    src="../images/uploads/<%= story.storyimage %>"
+                    alt=""
+                  />
+                  <% } %>
+                  <h2><%= story.data %></h2>
+                            </div>
+                            <% } else { %>
+                            <div id="storydetails">
+                    <h2><%= story.data %></h2>
+                            </div>
+                            <% } %>
+                    </div>
+                </div>
+                <%})%>
+        </div>
+      </div>
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-pagination"></div>
+</div>
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"
+integrity="sha512-cOH8ndwGgPo+K7pTvMrqYbmI8u8k6Sho3js0gOqVWTmQMlLIi6TbqGWRTpf1ga8ci9H3iPsvDLr4X7xwhC/+DQ=="
+crossorigin="anonymous"
+referrerpolicy="no-referrer"
+></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+
+
+    var swiper = new Swiper(".mySwiper", {
+      spaceBetween: 0,
+      centeredSlides: true,
+      autoplay: {
+        delay: 5000,
+        disableOnInteraction: false,
+      },
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+      on: {
+        slideChangeTransitionStart: function () {
+            var prevSlide = swiper.slides[swiper.previousIndex];
+            var prevVideoElement = prevSlide.querySelector(".video");
+    
+            if (prevVideoElement) {
+                // Mute the audio when transitioning to the next slide
+                prevVideoElement.muted = true;
+            }
+        },
+        slideChangeTransitionEnd: function () {
+            var currentSlide = swiper.slides[swiper.activeIndex];
+            var videoElement = currentSlide.querySelector(".video");
+    
+            if (videoElement) {
+                videoElement.muted = false;
+                swiper.autoplay.stop();
+    
+                // Update progress bar while playing
+                videoElement.addEventListener("timeupdate", function () {
+                    var progress =
+                        (videoElement.currentTime / videoElement.duration) * 100;
+                    var navbar = document.getElementById("storieschildnavbar");
+                    navbar.style.width = progress + "%";
+                });
+    
+                // Listen for the video to end
+                videoElement.addEventListener("ended", function () {
+                    swiper.autoplay.start();
+                    if (swiper.isEnd) {
+                        setTimeout(function () {
+                            var closeButton = document.querySelector(".ri-close-line");
+                            if (closeButton) {
+                                closeButton.click();
+                            }
+                        }, 1000); // 3 seconds delay
+                    }
+                });
+            } 
+            else {
+                // Check if the next slide is a video or image
+                var nextSlideIndex = swiper.activeIndex + 1;
+                var nextSlide = swiper.slides[nextSlideIndex];
+                var nextStoryType = nextSlide.querySelector(".video") ? "video" : "image";
+    
+                if (nextStoryType === "video") {
+                    // Handle the case where the next story is a video
+                    // You may want to adjust the behavior based on your requirements
+                } else {
+                    // Handle the case where the next story is an image
+                    swiper.autoplay.start();
+                    if (swiper.isEnd) {
+                        setTimeout(function () {
+                            var closeButton = document.querySelector(".ri-close-line");
+                            if (closeButton) {
+                                closeButton.click();
+                            }
+                        }, 1000); // 3 seconds delay
+                    }
+                }
+            }
+            var widthPercentage =
+                (swiper.activeIndex / (swiper.slides.length - 1)) * 100;
+            var navbar = document.getElementById("storieschildnavbar");
+            navbar.style.width = widthPercentage + "%";
+        },
+    },
+    }
+    );
+  </script>
+<% include ./partials/footer.ejs %>

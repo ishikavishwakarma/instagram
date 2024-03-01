@@ -1,0 +1,78 @@
+<% include ./partials/header.ejs %>
+
+<div id="storiesparent" class=" h-[100vh]  w-[100vw] bg-zinc-900 pb-3 flex flex-col items-center  ">
+    
+    .  <div id="imagepreview" class=" w-[100vw] rounded-b-[3vh] bg-zinc-700  -mt-5 h-[85vh]">
+        <div id="storiesparentnav " class=" h-[7vh] pt-3 px-3 w-[100vw] flex bg-transparent items-center justify-between">
+            <a href="/feed"><i class="ri-arrow-left-s-line h-[6vh] w-[6vh] bg-zinc-600  p-3 rounded-full text-white text-[20px]"></i></a>  
+            <i id="upload" class="ri-folder-image-line bg-zinc-600 py-2 px-3 h-[6vh] w-[6vh] rounded-full text-white text-[20px]"></i>
+        </div>    
+    </div>
+    <form id="uploadstatus" class="h-[7vh] w-[100vw] "   method="post" action="/post" enctype="multipart/form-data">
+        <input id="fileinp" hidden type="file" name="imageOrVideo">
+        <div id="text-container">
+            <textarea class=" w-[396px] p-2 h-[5vh] textt ml-1 mt-2 text-white bg-zinc-900" name="storydata story-text" id="datatype" cols="60" rows="2" placeholder="type here"></textarea>
+        </div>
+      </form>
+      <div class="button w-[100vw] flex items-center justify-between px-2 -mb-3 bg-zinc-900 h-[10vh]">
+
+          <a class="px-6 py-2 -mt-1  ml-4 bg-zinc-800 text-xs text-white rounded-full flex" id="outbtn" href="">
+            <div  class="h-[4vh] w-[4vh] bg-red-500 rounded-full text-align"></div>
+           <h3 class="w-[9vh] pt-2 text-center "> Your Story</h3>
+          </a>
+          <a class="px-10 py-[14px] bg-zinc-800 text-xs text-white rounded-full" id="outbtn" href="">Close Friend</a>
+       <i id="done"class="ri-arrow-right-s-line h-[6vh] w-[6vh] bg-white  pt-[9px] pl-[12px] rounded-full text-black text-[21px]"></i> 
+          
+      </div>
+   
+</div>
+
+<script>
+    document.querySelector("#upload")
+    .addEventListener("click",function(){
+      document.querySelector("#fileinp").click();
+    });
+    document.querySelector("#done")
+    .addEventListener("click", function () {
+      document.querySelector("#uploadstatus").submit();
+    })
+
+    document.addEventListener("DOMContentLoaded",()=>{
+        const fileinp = document.getElementById("fileinp")
+        const imagepreview = document.getElementById("imagepreview")
+  
+        fileinp.addEventListener("change",(event)=>{
+          const file = event.target.files[0];
+          if(file){
+            const reader = new FileReader();
+            reader.onload =()=>{
+              if(file.type.startsWith("video/")){
+                const video = document.createElement("video");
+                video.src = reader.result;
+                video.controls=true;
+                video.style.width = "100%";
+                video.style.height = "100%";
+              /*  video.width="100%"
+                video.height="100%"*/
+                imagepreview.innerHTML="";
+                imagepreview.appendChild(video);
+              }
+              else{
+                const img = new Image();
+                img.src = reader.result;
+               img.style.width = "100%";
+               img.style.height = "100%";
+                imagepreview.innerHTML="";
+                imagepreview.appendChild(img);
+              }
+            }
+            reader.readAsDataURL(file);
+          }
+          else{
+            imagepreview.innerHTML="";
+          }
+        })
+      })
+    // Your existing script remains unchanged
+</script>
+<% include ./partials/footer.ejs %>
